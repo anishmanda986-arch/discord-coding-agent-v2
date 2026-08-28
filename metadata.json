@@ -1,0 +1,7 @@
+{
+  "name": "CODING AGENT",
+  "description": "Production-grade Discord Coding Agent with multi-agent orchestration, smart context optimization, 5x cost reduction, sandbox execution, and OpenAI-compatible API discovery.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
+
