@@ -1,7 +1,5 @@
 """Production entrypoint for the Discord Coding Agent."""
-from dotenv import load_dotenv
-load_dotenv()
-
+# Railway and production runners inject environment variables directly.
 from app.bot.client import DiscordCodingAgentBot
 
 if __name__ == "__main__":
