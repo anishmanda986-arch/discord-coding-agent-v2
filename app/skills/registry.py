@@ -156,6 +156,11 @@ class SkillRegistry:
             "title": "Technical Documentation",
             "file": "documentation/SKILL.md"
         },
+        "accessibility": {
+            "keywords": ["accessibility", "a11y", "wcag", "screen reader", "keyboard navigation", "aria"],
+            "title": "Accessibility & WCAG Engineering",
+            "file": "accessibility/SKILL.md"
+        },
     }
 
     def __init__(self, skills_dir: Optional[str] = None):

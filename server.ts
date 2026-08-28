@@ -150,7 +150,9 @@ async def main():
         res = await handler.handle_token_command(
             user_id=args.get('user_id', 'discord_user_01'),
             username=args.get('username', 'Discord User'),
-            current_task_id=args.get('current_task_id')
+            task_id=args.get('current_task_id'),
+            is_admin=bool(args.get('is_admin', False)) and args.get('user_id', '') in __import__('app.config', fromlist=['config']).config.admin_user_ids,
+            admin_mode=bool(args.get('is_admin', False))
         )
         print(json.dumps(res))
     elif cmd == '/switch':

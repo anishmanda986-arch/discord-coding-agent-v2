@@ -63,7 +63,7 @@ class SystemDiagnosticService:
         selected_model = selected_model or config.default_strong_model
 
         # A. Discord Connection & Configuration
-        has_token = bool(config.discord_token or True)  # Mock/configured
+        has_token = bool(config.discord_token)
         results["discord_connection"] = {
             "name": "Discord Connection & Gateway",
             "passed": has_token,
@@ -130,23 +130,27 @@ class SystemDiagnosticService:
             "details": f"Model: {selected_model} (Found in endpoint catalog: {model_exists})"
         }
 
-        # G. Completion Endpoint Ping & Latency
-        t_comp_start = time.time()
-        comp_ok, comp_resp, comp_err = await self.discovery.test_completion(clean_base, api_key, selected_model)
-        comp_latency_ms = round((time.time() - t_comp_start) * 1000, 1)
-
-        results["completion_endpoint"] = {
-            "name": "Completion Endpoint (/chat/completions)",
-            "passed": comp_ok,
-            "latency_ms": comp_latency_ms,
-            "details": f"Ping completed: '{comp_resp}' ({comp_latency_ms} ms)" if comp_ok else f"Error: {comp_err}"
-        }
-        if not comp_ok:
-            # If offline key, provide simulation pass note
-            if "sample" in api_key or "test-key" in api_key:
-                results["completion_endpoint"]["details"] += " [Simulated Sandbox Passed]"
-            else:
+        # G. Completion Endpoint Ping & Latency. Never call a provider anonymously.
+        if api_key:
+            t_comp_start = time.time()
+            comp_ok, comp_resp, comp_err = await self.discovery.test_completion(clean_base, api_key, selected_model)
+            comp_latency_ms = round((time.time() - t_comp_start) * 1000, 1)
+            results["completion_endpoint"] = {
+                "name": "Completion Endpoint (/chat/completions)",
+                "passed": comp_ok,
+                "latency_ms": comp_latency_ms,
+                "details": f"Ping completed: '{comp_resp}' ({comp_latency_ms} ms)" if comp_ok else f"Error: {comp_err}"
+            }
+            if not comp_ok:
                 all_passed = False
+        else:
+            comp_latency_ms = 0
+            results["completion_endpoint"] = {
+                "name": "Completion Endpoint (/chat/completions)",
+                "passed": True,
+                "latency_ms": 0,
+                "details": "SKIPPED: configure an API key with /api before testing completions."
+            }
 
         # H. Latency Summary
         total_api_latency_ms = models_latency_ms + comp_latency_ms

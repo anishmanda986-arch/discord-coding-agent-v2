@@ -39,18 +39,18 @@ class TestSecurityAndSandbox(unittest.TestCase):
         self.assertFalse(is_safe2)
 
     def test_secret_redaction(self):
-        text_with_key = "Error contacting OpenAI with key [REDACTED]"
+        text_with_key = "Error contacting OpenAI with key " + "sk-" + "a" * 32
         redacted = SecretRedactor.redact_text(text_with_key)
         self.assertNotIn("sk-abcdef", redacted)
         self.assertIn("[REDACTED_API_KEY]", redacted)
 
-        discord_token = "[DISCORD_TOKEN]"
+        discord_token = "M" + "a" * 24 + "." + "b" * 6 + "." + "c" * 27
         redacted_discord = SecretRedactor.redact_text(f"Bot token: {discord_token}")
         self.assertNotIn(discord_token, redacted_discord)
         self.assertIn("[REDACTED_DISCORD_TOKEN]", redacted_discord)
 
     def test_encryption_roundtrip(self):
-        secret = "[API_KEY]"
+        secret = "sk-or-v1-" + "d" * 32
         encrypted = self.crypto.encrypt_secret(secret)
         self.assertNotEqual(secret, encrypted)
         decrypted = self.crypto.decrypt_secret(encrypted)

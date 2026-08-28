@@ -66,7 +66,8 @@ class MessageEventHandler:
             cmd = parts[0].lower()
             
             if cmd == "/token":
-                is_admin = "--admin" in parts or "-a" in parts
+                requested_admin = "--admin" in parts or "-a" in parts
+                is_admin = requested_admin and user_id in config.admin_user_ids
                 res = await self.commands_handler.handle_token_command(
                     user_id=user_id,
                     username="Discord User",
@@ -163,7 +164,7 @@ class MessageEventHandler:
             elif cmd == "/api":
                 provider = parts[1] if len(parts) > 1 else "OpenRouter"
                 base_url = parts[2] if len(parts) > 2 else "https://openrouter.ai/api/v1"
-                api_key = parts[3] if len(parts) > 3 else "sk-key"
+                api_key = parts[3] if len(parts) > 3 else ""
                 res = await self.commands_handler.handle_api_command(
                     scope_id=f"channel:{channel_id}",
                     provider=provider,

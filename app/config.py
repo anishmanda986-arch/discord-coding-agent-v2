@@ -57,6 +57,8 @@ class AppConfig:
     default_fast_model: str = field(default_factory=lambda: os.getenv("FAST_MODEL", "google/gemini-2.5-flash"))
     default_strong_model: str = field(default_factory=lambda: os.getenv("STRONG_MODEL", "anthropic/claude-3.5-sonnet"))
     github_token: Optional[str] = field(default_factory=lambda: os.getenv("GITHUB_TOKEN"))
+    # Comma-separated Discord user IDs allowed to use privileged /token --admin.
+    admin_user_ids: tuple = field(default_factory=lambda: tuple(x.strip() for x in os.getenv("ADMIN_USER_IDS", "").split(",") if x.strip()))
     
     security: SecurityConfig = field(default_factory=SecurityConfig)
     budget: BudgetLimits = field(default_factory=BudgetLimits)

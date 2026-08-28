@@ -118,7 +118,7 @@ class BotCommandsHandler:
         if saved_cfg and saved_cfg.api_key_encrypted:
             api_key = self.crypto.decrypt_secret(saved_cfg.api_key_encrypted)
         else:
-            api_key = config.default_api_key or "sk-test-key"
+            api_key = config.default_api_key or ""
 
         ok, models, err = await self.discovery.discover_models(base_url, api_key)
         
