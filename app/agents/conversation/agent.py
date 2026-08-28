@@ -62,14 +62,18 @@ Keep your responses engaging, helpful, and formatted nicely in Discord-compatibl
 
         # Fallback offline conversational heuristic responses for common greetings / questions
         lower = prompt.lower().strip()
-        if any(w in lower for w in ("hello", "hi", "hey", "good morning", "good evening")):
-            reply = "Hello! 👋 I'm your Discord Coding Agent. I can chat about programming concepts, explain architectures, or autonomously build and fix projects when you give me a coding task."
+        if any(w in lower for w in ("hello", "hi", "hey", "good morning", "good evening", "namaste", "kem cho")):
+            reply = "Hello! 👋 I'm your Discord Coding Agent. I can chat, explain architectures, discuss debugging strategies, or autonomously build, test, and package complete projects when you provide a coding request."
         elif "what is react" in lower:
             reply = "React is a popular open-source JavaScript library developed by Meta for building user interfaces, especially single-page applications (SPAs). It uses a declarative component-based model, Virtual DOM, and state hooks like `useState` and `useEffect` to efficiently render dynamic web UIs."
         elif "what can you do" in lower or "who are you" in lower:
-            reply = "I'm an autonomous Discord Coding Agent! Here's what I can do:\n- 💬 **Chat & Explain**: Answer technical questions, debug advice, and architectural discussions.\n- 🛠️ **Autonomous Coding**: Build, refactor, debug, test, and package complete projects from prompts.\n- ⚙️ **Slash Commands**: `/api` (configure models), `/test` (system diagnostics), `/connect` (gateway), `/disable` (channel isolation)."
+            reply = "I'm an autonomous Discord Coding Agent! Here is what I do:\n- 💬 **Normal Conversation**: Chat about tech, architecture, debugging advice, or answer programming questions.\n- 🛠️ **Autonomous Coding**: Build, refactor, debug, test, and package complete projects into downloadable ZIP archives.\n- ⚙️ **Slash Commands**:\n  • `/api` — Configure providers (OpenRouter/OpenAI/Ollama) & encrypt API keys.\n  • `/models` — Discover and filter available LLM models.\n  • `/token` (`--admin`) — Inspect token quotas, cache savings, and cost breakdowns.\n  • `/switch` — Switch active models or toggle automated fallback.\n  • `/test` — Run 21-point system diagnostics or sandbox project test suites.\n  • `/connect` — HMAC gateway registration for worker agents.\n  • `/disable` — Isolate/toggle bot activity in specific channels."
+        elif any(c in lower for c in ("/token", "/switch", "/test", "/models", "/api", "command")):
+            reply = "Here are the supported bot commands:\n- `/models [query]` — View and filter models from the active provider.\n- `/token [--admin]` — Check token usage, cache savings, and quota limits.\n- `/switch [model_name] [auto: on/off]` — Change active LLM or enable automatic fallback.\n- `/test` — Run 21-point system diagnostics or project test suites.\n- `/api [provider] [base_url] [key]` — Configure custom OpenAI-compatible endpoint.\n- `/disable` — Mute or unmute the bot in the current channel."
         elif "explain recursion" in lower:
             reply = "Recursion is a programming technique where a function calls itself to solve a smaller instance of the same problem until it reaches a base condition.\n\nExample in Python:\n```python\ndef factorial(n):\n    if n <= 1:  # Base case\n        return 1\n    return n * factorial(n - 1)  # Recursive case\n```"
+        elif any(k in lower for k in ("kya", "kaise", "bhai", "yaar", "batao", "kuch")):
+            reply = "Haan bhai! Main ready hoon. Agar aapko normal chat/discussion karni hai ya kisi programming concept ko samajhna hai to batao. Agar koi project ya code banwana hai (jaise 'build a react app' ya 'fix login error'), to prompt do — main autonomously code likh kar, test run karke deliverable provide kar dunga."
         else:
             reply = f"Thank you for your message! If you have a question or want to discuss programming concepts, let me know. To start an autonomous coding task, give me a prompt like `build a React weather app` or `fix the login error`."
 

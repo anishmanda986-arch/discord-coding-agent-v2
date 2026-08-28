@@ -101,16 +101,84 @@ class MessageEventHandler:
                     await send_text_callback(res.get("message", "Model switched."))
                 return res
 
+            elif cmd in ("/models", "/model", "/modle"):
+                query = parts[1] if len(parts) > 1 else None
+                res = await self.commands_handler.handle_models_command(
+                    query=query,
+                    scope_id=f"channel:{channel_id}"
+                )
+                if send_embed_callback:
+                    models_list = res.get("models", [])
+                    models_str = "\n".join([f"• `{m.get('id')}`" for m in models_list[:15]]) or "No models found."
+                    await send_embed_callback({
+                        "title": f"Discovered Models ({res.get('matched_models', len(models_list))})",
+                        "description": models_str,
+                        "color": 0x3498DB
+                    })
+                elif send_text_callback:
+                    models_list = res.get("models", [])
+                    models_str = "\n".join([f"• `{m.get('id')}`" for m in models_list[:15]]) or "No models found."
+                    await send_text_callback(f"**Discovered Models:**\n{models_str}")
+                return res
+
+            elif cmd == "/test":
+                res = await self.commands_handler.handle_test_command()
+                report_str = res.get("ascii_report") or res.get("report") or "Diagnostics Completed."
+                if send_text_callback:
+                    await send_text_callback(f"```\n{report_str}\n```")
+                elif send_embed_callback:
+                    await send_embed_callback({
+                        "title": f"System Diagnostic: {res.get('overall_status', 'COMPLETED')}",
+                        "description": f"```\n{report_str[:3800]}\n```",
+                        "color": 0x2ECC71 if res.get("overall_status") == "PASS" else 0xE74C3C
+                    })
+                return res
+
             elif cmd == "/disable":
                 res = await self.commands_handler.handle_disable_command(channel_id=channel_id, guild_id=guild_id)
                 if send_text_callback:
                     await send_text_callback(res["message"])
+                elif send_embed_callback:
+                    await send_embed_callback({
+                        "title": "Channel Configuration",
+                        "description": res["message"],
+                        "color": 0x95A5A6
+                    })
                 return res
 
-            elif cmd == "/test":
-                res = await self.commands_handler.handle_test_command(scope_id=f"channel:{channel_id}")
+            elif cmd == "/connect":
+                agent_id = parts[1] if len(parts) > 1 else "coding_agent_primary"
+                endpoint = parts[2] if len(parts) > 2 else "http://127.0.0.1:3000"
+                res = await self.commands_handler.handle_connect_command(agent_id=agent_id, endpoint=endpoint)
                 if send_text_callback:
-                    await send_text_callback(f"```\n{res['report']}\n```")
+                    await send_text_callback(res["message"])
+                elif send_embed_callback:
+                    await send_embed_callback({
+                        "title": "Gateway Connection",
+                        "description": res["message"],
+                        "color": 0x2ECC71
+                    })
+                return res
+
+            elif cmd == "/api":
+                provider = parts[1] if len(parts) > 1 else "OpenRouter"
+                base_url = parts[2] if len(parts) > 2 else "https://openrouter.ai/api/v1"
+                api_key = parts[3] if len(parts) > 3 else "sk-key"
+                res = await self.commands_handler.handle_api_command(
+                    scope_id=f"channel:{channel_id}",
+                    provider=provider,
+                    base_url=base_url,
+                    api_key=api_key
+                )
+                msg = res.get("message") or res.get("error", "API configured.")
+                if send_text_callback:
+                    await send_text_callback(msg)
+                elif send_embed_callback:
+                    await send_embed_callback({
+                        "title": "API Endpoint Configuration",
+                        "description": msg,
+                        "color": 0x2ECC71 if res.get("success") else 0xE74C3C
+                    })
                 return res
 
         # 1. Check if channel is disabled

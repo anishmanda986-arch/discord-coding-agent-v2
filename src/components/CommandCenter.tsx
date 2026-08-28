@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Terminal, Key, Shield, Radio, Power, Check, AlertCircle, RefreshCw, Layers, Search, Cpu, CheckCircle2, XCircle, Clock } from "lucide-react";
 
 export const CommandCenter: React.FC = () => {
-  const [activeCommand, setActiveCommand] = useState<"/api" | "/models" | "/test" | "/connect" | "/disable">("/api");
+  const [activeCommand, setActiveCommand] = useState<"/api" | "/models" | "/test" | "/token" | "/switch" | "/connect" | "/disable">("/api");
 
   // /api state
   const [provider, setProvider] = useState("OpenRouter");
@@ -15,6 +15,14 @@ export const CommandCenter: React.FC = () => {
   // /models state
   const [modelSearchQuery, setModelSearchQuery] = useState("");
   const [modelsFilterList, setModelsFilterList] = useState<any[]>([]);
+
+  // /token state
+  const [tokenAdminMode, setTokenAdminMode] = useState(false);
+  const [tokenUserId, setTokenUserId] = useState("user_discord_123");
+
+  // /switch state
+  const [switchTargetModel, setSwitchTargetModel] = useState("anthropic/claude-3.5-sonnet");
+  const [switchAutoMode, setSwitchAutoMode] = useState<boolean | null>(null);
 
   // Command Execution State
   const [isExecuting, setIsExecuting] = useState(false);
@@ -84,6 +92,19 @@ export const CommandCenter: React.FC = () => {
         workspace_path: testMode === "workspace_test" ? workspacePath : null,
         run_full_diagnostics: testMode === "system_diagnostic",
       };
+    } else if (activeCommand === "/token") {
+      args = {
+        user_id: tokenUserId,
+        username: "Discord Dev",
+        is_admin: tokenAdminMode,
+        admin_mode: tokenAdminMode,
+      };
+    } else if (activeCommand === "/switch") {
+      args = {
+        user_id: tokenUserId,
+        target_model: switchTargetModel,
+        auto_switch: switchAutoMode,
+      };
     } else if (activeCommand === "/connect") {
       args = { agent_id: agentId, endpoint };
     } else if (activeCommand === "/disable") {
@@ -126,15 +147,15 @@ export const CommandCenter: React.FC = () => {
             </p>
           </div>
           {/* Command Switcher Buttons */}
-          <div className="flex items-center space-x-1.5 bg-slate-800 p-1 rounded-lg border border-slate-700">
-            {(["/api", "/models", "/test", "/connect", "/disable"] as const).map((cmd) => (
+          <div className="flex flex-wrap items-center gap-1.5 bg-slate-800 p-1 rounded-lg border border-slate-700">
+            {(["/api", "/models", "/token", "/switch", "/test", "/connect", "/disable"] as const).map((cmd) => (
               <button
                 key={cmd}
                 onClick={() => {
                   setActiveCommand(cmd);
                   setCommandOutput(null);
                 }}
-                className={`px-3 py-1.5 rounded-md text-xs font-mono font-medium transition cursor-pointer ${
+                className={`px-2.5 py-1.5 rounded-md text-xs font-mono font-medium transition cursor-pointer ${
                   activeCommand === cmd
                     ? "bg-blue-600 text-white shadow-sm"
                     : "text-slate-400 hover:text-slate-200"
@@ -158,6 +179,8 @@ export const CommandCenter: React.FC = () => {
             <span className="text-[11px] text-blue-400 font-mono">
               {activeCommand === "/api" && "Endpoint Discovery & Encryption"}
               {activeCommand === "/models" && "Model Discovery & Filtering"}
+              {activeCommand === "/token" && "Quota & Token Consumption Inspection"}
+              {activeCommand === "/switch" && "Model Switch & Fallback Orchestration"}
               {activeCommand === "/test" && "21-Point System & API Diagnostics"}
               {activeCommand === "/connect" && "HMAC Gateway Registration"}
               {activeCommand === "/disable" && "Channel Isolation Toggle"}
@@ -303,6 +326,110 @@ export const CommandCenter: React.FC = () => {
                     </button>
                   </div>
                 ))}
+              </div>
+            </div>
+          )}
+
+          {/* /token FORM */}
+          {activeCommand === "/token" && (
+            <div className="space-y-4 text-xs">
+              <div>
+                <label className="block text-slate-400 font-medium mb-1">Target Discord User ID</label>
+                <input
+                  type="text"
+                  value={tokenUserId}
+                  onChange={(e) => setTokenUserId(e.target.value)}
+                  className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-slate-200 font-mono"
+                  placeholder="user_discord_123"
+                />
+              </div>
+
+              <div className="flex items-center justify-between bg-slate-800/80 p-3 rounded-lg border border-slate-700">
+                <div>
+                  <span className="font-semibold text-slate-200 block">Admin Mode (--admin)</span>
+                  <span className="text-[10px] text-slate-400">
+                    Displays system-wide token pool usage, cache savings, cost breakdowns, and server totals.
+                  </span>
+                </div>
+                <button
+                  onClick={() => setTokenAdminMode(!tokenAdminMode)}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer transition ${
+                    tokenAdminMode
+                      ? "bg-emerald-600 text-white shadow-sm"
+                      : "bg-slate-700 text-slate-300 hover:bg-slate-600"
+                  }`}
+                >
+                  {tokenAdminMode ? "Admin Active" : "User Only"}
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* /switch FORM */}
+          {activeCommand === "/switch" && (
+            <div className="space-y-4 text-xs">
+              <div>
+                <label className="block text-slate-400 font-medium mb-1">Target Model ID</label>
+                <input
+                  type="text"
+                  value={switchTargetModel}
+                  onChange={(e) => setSwitchTargetModel(e.target.value)}
+                  className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-slate-200 font-mono"
+                  placeholder="anthropic/claude-3.5-sonnet, openai/gpt-4o, etc."
+                />
+                {discoveredModels.length > 0 && (
+                  <div className="mt-2 flex flex-wrap gap-1 max-h-24 overflow-y-auto">
+                    {discoveredModels.slice(0, 10).map((m) => (
+                      <button
+                        key={m.id}
+                        onClick={() => setSwitchTargetModel(m.id)}
+                        className={`text-[10px] px-2 py-0.5 rounded font-mono border ${
+                          switchTargetModel === m.id
+                            ? "bg-blue-600 text-white border-blue-500"
+                            : "bg-slate-800 text-slate-400 border-slate-700 hover:text-slate-200"
+                        }`}
+                      >
+                        {m.id}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-slate-400 font-medium mb-1.5">Auto-Switch Fallback Mode</label>
+                <div className="grid grid-cols-3 gap-2">
+                  <button
+                    onClick={() => setSwitchAutoMode(null)}
+                    className={`py-1.5 px-2 rounded-lg border text-center font-medium cursor-pointer transition ${
+                      switchAutoMode === null
+                        ? "bg-blue-600 text-white border-blue-500"
+                        : "bg-slate-800 border-slate-700 text-slate-400"
+                    }`}
+                  >
+                    Keep Current
+                  </button>
+                  <button
+                    onClick={() => setSwitchAutoMode(true)}
+                    className={`py-1.5 px-2 rounded-lg border text-center font-medium cursor-pointer transition ${
+                      switchAutoMode === true
+                        ? "bg-emerald-600 text-white border-emerald-500"
+                        : "bg-slate-800 border-slate-700 text-slate-400"
+                    }`}
+                  >
+                    Enable Auto
+                  </button>
+                  <button
+                    onClick={() => setSwitchAutoMode(false)}
+                    className={`py-1.5 px-2 rounded-lg border text-center font-medium cursor-pointer transition ${
+                      switchAutoMode === false
+                        ? "bg-rose-600 text-white border-rose-500"
+                        : "bg-slate-800 border-slate-700 text-slate-400"
+                    }`}
+                  >
+                    Lock Model
+                  </button>
+                </div>
               </div>
             </div>
           )}
